@@ -14,4 +14,59 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub struct Client {}
+use crate::proto::milvus::milvus_service_client::MilvusServiceClient;
+
+use crate::error::{Error, Result};
+use tonic::codegen::StdError;
+use tonic::transport::Channel;
+
+pub struct Client {
+    client: MilvusServiceClient<Channel>,
+}
+
+impl Client {
+    pub async fn new<D>(dst: D) -> Result<Self>
+    where
+        D: std::convert::TryInto<tonic::transport::Endpoint>,
+        D::Error: Into<StdError>,
+    {
+        match MilvusServiceClient::connect(dst).await {
+            Ok(i) => Ok(Self { client: i }),
+            Err(e) => Err(Error::Grpc(e)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Client;
+    use crate::error::Result;
+    use futures::executor::block_on;
+    #[tokio::test]
+    async fn test_create_client() -> Result<()> {
+        const URL: &str = "http://localhost:19530";
+        match Client::new(URL).await {
+            Ok(_) => return Result::<()>::Ok(()),
+            Err(e) => {
+                println!("Error is {}.", e);
+                panic!()
+            },
+        }
+    }
+    #[tokio::test]
+    async fn test_create_client_wrong_url() -> Result<()> {
+        const URL: &str = "http://localhost:9999";
+        match Client::new(URL).await {
+            Ok(_) => panic!(),
+            Err(_) => return Result::<()>::Ok(()),
+        }
+    }
+    #[tokio::test]
+    async fn test_create_client_wrong_fmt() -> Result<()> {
+        const URL: &str = "9999";
+        match Client::new(URL).await {
+            Ok(_) => panic!(),
+            Err(_) => return Result::<()>::Ok(()),
+        }
+    }
+}
