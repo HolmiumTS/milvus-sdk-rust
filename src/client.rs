@@ -14,9 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::proto::milvus::milvus_service_client::MilvusServiceClient;
-
 use crate::error::{Error, Result};
+use crate::proto::milvus::milvus_service_client::MilvusServiceClient;
 use tonic::codegen::StdError;
 use tonic::transport::Channel;
 
@@ -41,23 +40,20 @@ impl Client {
 mod tests {
     use super::Client;
     use crate::error::Result;
-    use futures::executor::block_on;
+
     #[tokio::test]
     async fn test_create_client() -> Result<()> {
         const URL: &str = "http://localhost:19530";
         match Client::new(URL).await {
             Ok(_) => return Result::<()>::Ok(()),
-            Err(e) => {
-                println!("Error is {}.", e);
-                panic!()
-            },
+            Err(e) => panic!("Error is {}.", e),
         }
     }
     #[tokio::test]
     async fn test_create_client_wrong_url() -> Result<()> {
         const URL: &str = "http://localhost:9999";
         match Client::new(URL).await {
-            Ok(_) => panic!(),
+            Ok(_) => panic!("Should fail due to wrong url."),
             Err(_) => return Result::<()>::Ok(()),
         }
     }
@@ -65,7 +61,7 @@ mod tests {
     async fn test_create_client_wrong_fmt() -> Result<()> {
         const URL: &str = "9999";
         match Client::new(URL).await {
-            Ok(_) => panic!(),
+            Ok(_) => panic!("Should fail due to wrong format url."),
             Err(_) => return Result::<()>::Ok(()),
         }
     }

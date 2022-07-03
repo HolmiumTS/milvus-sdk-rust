@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #[test]
+#[ignore]
 fn connect() {
     unimplemented!()
 }
